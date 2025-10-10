@@ -92,9 +92,13 @@ class Wallet(models.Model):
 
 
 class WalletTransaction(models.Model):
+    class WalletTransactionStatus(models.TextChoices):
+        DEPOSIT = 'deposit', 'Deposit'
+        WITHDRAW = 'withdraw', 'Withdraw'
+    
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    transaction_type = models.CharField(max_length=10, choices=[('deposit', 'Deposit'), ('withdraw', 'Withdraw')])
+    transaction_type = models.CharField(max_length=10, choices=WalletTransactionStatus.choices)
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=255, blank=True)
 
