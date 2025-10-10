@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 from decimal import Decimal
 
-from subscription.models import Wallet, Profile, WalletTransaction
+from subscription.models import Payment, Subscription, Wallet, Profile, WalletTransaction
 
 
 @receiver(post_save, sender=User)
@@ -42,3 +42,12 @@ def create_wallet_transaction(sender, instance, **kwargs):
         amount=difference,
         transaction_type=transaction_type
     )
+
+@receiver(post_save, sender=Payment)
+def create_subscription(sender, instance, created, **kwargs):
+    if created:
+        Subscription.objects.create(
+            user=instance.user,
+            subscription_plan=instance.subscription_plan,
+            is_active=True
+        )
