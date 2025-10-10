@@ -5,8 +5,11 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField()
+    bio = models.TextField(null=True, blank=True)
     join_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Join Date: {self.join_date}"
 
 
 class Category(models.Model):
@@ -24,6 +27,7 @@ class Rating(models.Model):
 
 
 class Video(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='videos', null=True)
     title = models.CharField(max_length=255)
     description = models.TextField()
     file = models.FileField(upload_to='videos/')
@@ -67,7 +71,7 @@ class Payment(models.Model):
 
 class Wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    balance = models.FloatField()
 
     def __str__(self):
         return f"{self.user.username} - Balance: {self.balance}"
@@ -93,6 +97,9 @@ class WalletTransaction(models.Model):
     transaction_type = models.CharField(max_length=10, choices=[('deposit', 'Deposit'), ('withdraw', 'Withdraw')])
     created_at = models.DateTimeField(auto_now_add=True)
     description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f'{self.wallet.user.username} - {self.amount} - {self.transaction_type}'
 
 
 class WatchHistory(models.Model):
