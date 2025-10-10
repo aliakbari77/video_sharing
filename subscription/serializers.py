@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from subscription.models import SubscriptionPlan
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
     password2 = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -22,3 +24,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class WalletTransactionSerializer(serializers.Serializer):
     amount = serializers.FloatField()
+
+
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = '__all__'

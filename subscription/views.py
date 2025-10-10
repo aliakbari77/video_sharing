@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound
@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-from subscription.serializers import RegisterSerializer, WalletTransactionSerializer
-from subscription.models import WalletTransaction, Wallet
+from subscription.serializers import RegisterSerializer, SubscriptionPlanSerializer, WalletTransactionSerializer
+from subscription.models import WalletTransaction, Wallet, SubscriptionPlan
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -40,3 +40,8 @@ class WalletTranactionView(APIView):
              raise APIException({'error': 'Transaction not found.'})
 
         return Response(data={'balance': wallet.balance}, status=status.HTTP_200_OK)
+
+
+class SubscriptionPlansView(ListAPIView):
+    queryset = SubscriptionPlan.objects.all()
+    serializer_class = SubscriptionPlanSerializer
