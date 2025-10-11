@@ -12,9 +12,10 @@ from subscription.permissions import CanWatchVideo
 from subscription.serializers import (
     PaymentHistorySerializer,
     PaymentSerializer, 
-    RegisterSerializer, 
+    RegisterSerializer,
+    RenewalSubscribeSerializer, 
     SubscriptionPlanSerializer, 
-    UnsubscribeSerializer, 
+    UnSubscribeSerializer, 
     VideoDetailSerializer, 
     VideoListSerializer, 
     WalletTransactionSerializer,
@@ -132,7 +133,7 @@ class UnsubscribeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = UnsubscribeSerializer(data=request.data)
+        serializer = UnSubscribeSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 subscription = Subscription.objects.get(id=serializer.data.get('subscription_id'),
@@ -171,3 +172,41 @@ class PaymentHistoryView(ListAPIView):
     queryset = Payment.objects.all()
     permission_classes = [IsAuthenticated]
     serializer_class = PaymentHistorySerializer
+
+
+class RenewalSubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = RenewalSubscribeSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            try:
+                subscription_id = serializer.data.get('subscription_id')
+                subscription = Subscription.objects.get(id=subscription_id, 
+                                                             user=user, 
+                                                             is_active=True)
+                subscription_plan = subscription.subscription_plan
+            except:
+                raise NotFound({'error': 'Active subscription not found'})
+            
+            payment_methods = Payment.PaymentMethod
+            payment_method = serializer.data.get('payment_method') 
+            if payment_method == payment_methods.wallet:
+                wallet = Wallet.objects.get(user=user)
+                amount = subscription_plan.price
+                if wallet.balance >= amount:
+                    Payment.objects.create(user=user, 
+                                           subscription_plan=subscription_plan,
+                                           amount=amount,
+                                           payment_method=payment_method,
+                                           successful=True)
+                    wallet.withdraw(amount)
+                    return Response(data={'message': f'{user} buy {subscription_plan.name} plan successfully.'}, 
+                                    status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'The balance of wallet'
+                                    ' is less than the price of this plan. '
+                                    'Plaeas Charge the wallet and try again.'}, status=status.HTTP_200_OK)
+            elif payment_method == payment_methods.online:
+                return Response({'message': 'The online method is not implemented yet.'}, status=status.HTTP_200_OK)

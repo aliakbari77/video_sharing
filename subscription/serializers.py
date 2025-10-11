@@ -58,7 +58,7 @@ class VideoDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class UnsubscribeSerializer(serializers.Serializer):
+class UnSubscribeSerializer(serializers.Serializer):
     subscription_id = serializers.IntegerField()
 
 
@@ -74,3 +74,8 @@ class PaymentHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = '__all__'
+
+
+class RenewalSubscribeSerializer(serializers.Serializer):
+    subscription_id = serializers.IntegerField()
+    payment_method = serializers.CharField()
