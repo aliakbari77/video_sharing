@@ -16,7 +16,8 @@ from subscription.serializers import (
     UnsubscribeSerializer, 
     VideoDetailSerializer, 
     VideoListSerializer, 
-    WalletTransactionSerializer
+    WalletTransactionSerializer,
+    WatchHistorySerializer
     )
 from subscription.models import (
     Payment, 
@@ -124,7 +125,6 @@ class VideoDetailView(APIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-
 class UnsubscribeView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -142,3 +142,24 @@ class UnsubscribeView(APIView):
             except:
                 raise NotFound({'error': 'The active subscription not found.'})
         return Response(data={'error': 'Please send the subscription.'})
+    
+
+class WatchHistoryView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = WatchHistory.objects.all()
+    serializer_class = WatchHistorySerializer
+
+
+class WatchHistoryByVideoView(APIView):
+
+    def get(self, request, video_id, *args, **kwargs):
+        try:
+            video = Video.objects.get(id=video_id)
+        except:
+            raise NotFound({'error': 'Video not found.'})
+        
+        watch_history = WatchHistory.objects.filter(video=video)
+
+        serializer = WatchHistorySerializer(watch_history, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+        

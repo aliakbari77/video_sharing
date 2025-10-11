@@ -1,5 +1,14 @@
 from django.urls import path
-from subscription.views import PaymentView, SubscriptionPlansView, UnsubscribeView, VideoDetailView, VideoView, WalletTransactionView
+from subscription.views import (
+    PaymentView, 
+    SubscriptionPlansView, 
+    UnsubscribeView, 
+    VideoDetailView, 
+    VideoView, 
+    WalletTransactionView, 
+    WatchHistoryByVideoView, 
+    WatchHistoryView
+    )
 
 urlpatterns = [
     path('wallet/<str:transaction_type>/', WalletTransactionView.as_view(), name='wallet-deposit'),
@@ -8,4 +17,6 @@ urlpatterns = [
     path('videos/', VideoView.as_view(), name='video-list'),
     path('video/<int:pk>/', VideoDetailView.as_view(), name='video-detail'),
     path('unsubscribe/', UnsubscribeView.as_view(), name='unsubscribe'),
+    path('watch-history/', WatchHistoryView.as_view(), name='watch-history'),
+    path('watch-history/video/<int:video_id>/', WatchHistoryByVideoView.as_view(), name='watch-history-video')
 ]
