@@ -9,8 +9,25 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from subscription.permissions import CanWatchVideo
-from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, UnsubscribeSerializer, VideoDetailSerializer, VideoListSerializer, WalletTransactionSerializer
-from subscription.models import Payment, Subscription, Video, WalletTransaction, Wallet, SubscriptionPlan
+from subscription.serializers import (
+    PaymentSerializer, 
+    RegisterSerializer, 
+    SubscriptionPlanSerializer, 
+    UnsubscribeSerializer, 
+    VideoDetailSerializer, 
+    VideoListSerializer, 
+    WalletTransactionSerializer
+    )
+from subscription.models import (
+    Payment, 
+    Subscription, 
+    Video, 
+    WalletTransaction, 
+    Wallet, 
+    SubscriptionPlan,
+    WatchHistory,
+    )
+
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -89,14 +106,23 @@ class VideoView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-class VideoDetailView(RetrieveAPIView):
-    queryset = Video.objects.all()
-    serializer_class = VideoDetailSerializer
+class VideoDetailView(APIView):
     permission_classes = [IsAuthenticated, CanWatchVideo]
 
     def get(self, request, *args, **kwargs):
-        # TODO: update the viewer of video
-        pass
+        video_id = self.kwargs.get('pk')
+        try:
+            video = Video.objects.get(id=video_id)
+        except:
+            raise NotFound({'error': 'Video not found.'})
+        
+        user = request.user
+        if not WatchHistory.objects.filter(user=user, video=video).exists():
+            WatchHistory.objects.create(user=user, video=video)
+        
+        serializer = VideoDetailSerializer(video)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
 
 
 class UnsubscribeView(APIView):
