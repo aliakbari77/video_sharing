@@ -40,6 +40,8 @@ class PaymentSerializer(serializers.ModelSerializer):
         
 
 class VideoListSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='category.name') # TODO: if has multiple category change here.
+
     class Meta:
         model = Video
         fields = ['id',
@@ -49,6 +51,8 @@ class VideoListSerializer(serializers.ModelSerializer):
         
 
 class VideoDetailSerializer(serializers.ModelSerializer):
+    category = serializers.CharField(source='category.name') # TODO: if has multiple category change here.
+
     class Meta:
         model = Video
         fields = '__all__'

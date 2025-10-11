@@ -1,14 +1,14 @@
 from django.contrib.auth.models import User
 
-from rest_framework.generics import CreateAPIView, ListAPIView
-from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, VideoListSerializer, WalletTransactionSerializer
+from subscription.permissions import CanWatchVideo
+from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, VideoDetailSerializer, VideoListSerializer, WalletTransactionSerializer
 from subscription.models import Payment, Video, WalletTransaction, Wallet, SubscriptionPlan
 
 class RegisterView(CreateAPIView):
@@ -86,3 +86,9 @@ class VideoView(ListAPIView):
     queryset = Video.objects.all()
     serializer_class = VideoListSerializer
     permission_classes = [AllowAny]
+
+
+class VideoDetailView(RetrieveAPIView):
+    queryset = Video.objects.all()
+    serializer_class = VideoDetailSerializer
+    permission_classes = [IsAuthenticated, CanWatchVideo]

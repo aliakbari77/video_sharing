@@ -17,6 +17,9 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
 
+    def __repr__(self):
+        return f'{self.name}'
+
     def __str__(self):
         return f'{self.name}'
 
