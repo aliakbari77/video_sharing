@@ -10,6 +10,7 @@ from rest_framework.exceptions import APIException
 
 from subscription.permissions import CanWatchVideo
 from subscription.serializers import (
+    PaymentHistorySerializer,
     PaymentSerializer, 
     RegisterSerializer, 
     SubscriptionPlanSerializer, 
@@ -89,7 +90,9 @@ class PaymentView(CreateAPIView):
                 if wallet.balance >= amount:
                     Payment.objects.create(user=user, 
                                            subscription_plan=subscription_plan,
-                                           amount=amount)
+                                           amount=amount,
+                                           payment_method=payment_method,
+                                           successful=True)
                     wallet.withdraw(amount)
                     return Response(data={'message': f'{user} buy {subscription_plan.name} plan successfully.'}, 
                                     status=status.HTTP_200_OK)
@@ -162,4 +165,9 @@ class WatchHistoryByVideoView(APIView):
 
         serializer = WatchHistorySerializer(watch_history, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
-        
+
+
+class PaymentHistoryView(ListAPIView):
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
+    serializer_class = PaymentHistorySerializer

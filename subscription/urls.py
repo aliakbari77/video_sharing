@@ -1,5 +1,6 @@
 from django.urls import path
 from subscription.views import (
+    PaymentHistoryView,
     PaymentView, 
     SubscriptionPlansView, 
     UnsubscribeView, 
@@ -18,5 +19,6 @@ urlpatterns = [
     path('video/<int:pk>/', VideoDetailView.as_view(), name='video-detail'),
     path('unsubscribe/', UnsubscribeView.as_view(), name='unsubscribe'),
     path('watch-history/', WatchHistoryView.as_view(), name='watch-history'),
-    path('watch-history/video/<int:video_id>/', WatchHistoryByVideoView.as_view(), name='watch-history-video')
+    path('watch-history/video/<int:video_id>/', WatchHistoryByVideoView.as_view(), name='watch-history-video'),
+    path('payment-history/', PaymentHistoryView.as_view(), name='payment-history')
 ]

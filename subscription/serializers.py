@@ -66,3 +66,11 @@ class WatchHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = WatchHistory
         fields = '__all__'
+
+
+class PaymentHistorySerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+    subscription_plan = serializers.CharField(source='subscription_plan.name')
+    class Meta:
+        model = Payment
+        fields = '__all__'
