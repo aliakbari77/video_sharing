@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
 
-from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, WalletTransactionSerializer
-from subscription.models import Payment, WalletTransaction, Wallet, SubscriptionPlan
+from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, VideoListSerializer, WalletTransactionSerializer
+from subscription.models import Payment, Video, WalletTransaction, Wallet, SubscriptionPlan
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -81,3 +81,8 @@ class PaymentView(CreateAPIView):
             elif payment_method == payment_methods.online:
                 return Response({'message': 'The online method is not implemented yet.'}, status=status.HTTP_200_OK)
                 
+
+class VideoView(ListAPIView):
+    queryset = Video.objects.all()
+    serializer_class = VideoListSerializer
+    permission_classes = [AllowAny]

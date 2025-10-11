@@ -17,6 +17,8 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
 
+    def __str__(self):
+        return f'{self.name}'
 
 class Rating(models.Model):
     rate = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(10.0)])
@@ -37,6 +39,9 @@ class Video(models.Model):
     duration = models.DurationField(blank=True, null=True)
     rates = models.ManyToManyField(User, through=Rating)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.title}'
 
 
 class SubscriptionPlan(models.Model):
