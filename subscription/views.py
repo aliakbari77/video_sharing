@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 
+from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound
@@ -8,8 +9,8 @@ from rest_framework import status
 from rest_framework.exceptions import APIException
 
 from subscription.permissions import CanWatchVideo
-from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, VideoDetailSerializer, VideoListSerializer, WalletTransactionSerializer
-from subscription.models import Payment, Video, WalletTransaction, Wallet, SubscriptionPlan
+from subscription.serializers import PaymentSerializer, RegisterSerializer, SubscriptionPlanSerializer, UnsubscribeSerializer, VideoDetailSerializer, VideoListSerializer, WalletTransactionSerializer
+from subscription.models import Payment, Subscription, Video, WalletTransaction, Wallet, SubscriptionPlan
 
 class RegisterView(CreateAPIView):
     queryset = User.objects.all()
@@ -17,7 +18,7 @@ class RegisterView(CreateAPIView):
     permission_classes = [AllowAny]
 
 
-class WalletTranactionView(CreateAPIView):
+class WalletTransactionView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = WalletTransactionSerializer
 
@@ -92,3 +93,26 @@ class VideoDetailView(RetrieveAPIView):
     queryset = Video.objects.all()
     serializer_class = VideoDetailSerializer
     permission_classes = [IsAuthenticated, CanWatchVideo]
+
+    def get(self, request, *args, **kwargs):
+        # TODO: update the viewer of video
+        pass
+
+
+class UnsubscribeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = UnsubscribeSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                subscription = Subscription.objects.get(id=serializer.data.get('subscription_id'),
+                                                        user=request.user, 
+                                                        is_active=True)
+                subscription.is_active = False
+                subscription.save()
+                return Response(data={'message': 'The unsubscribe action successfully.'},
+                                status=status.HTTP_200_OK)
+            except:
+                raise NotFound({'error': 'The active subscription not found.'})
+        return Response(data={'error': 'Please send the subscription.'})

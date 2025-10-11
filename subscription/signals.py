@@ -45,6 +45,8 @@ def create_wallet_transaction(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Payment)
 def create_subscription(sender, instance, created, **kwargs):
+    Subscription.objects.filter(user=instance.user).update(is_active=False)
+    
     if created:
         Subscription.objects.create(
             user=instance.user,

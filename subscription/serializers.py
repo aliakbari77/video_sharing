@@ -56,3 +56,7 @@ class VideoDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
         fields = '__all__'
+
+
+class UnsubscribeSerializer(serializers.Serializer):
+    subscription_id = serializers.IntegerField()
