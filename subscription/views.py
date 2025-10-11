@@ -10,6 +10,7 @@ from rest_framework.exceptions import APIException
 
 from subscription.permissions import CanWatchVideo
 from subscription.serializers import (
+    CommentSerializer,
     PaymentHistorySerializer,
     PaymentSerializer, 
     RegisterSerializer,
@@ -29,6 +30,7 @@ from subscription.models import (
     Wallet, 
     SubscriptionPlan,
     WatchHistory,
+    Comment
     )
 
 
@@ -210,3 +212,21 @@ class RenewalSubscribeView(APIView):
                                     'Plaeas Charge the wallet and try again.'}, status=status.HTTP_200_OK)
             elif payment_method == payment_methods.online:
                 return Response({'message': 'The online method is not implemented yet.'}, status=status.HTTP_200_OK)
+
+
+class CommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = CommentSerializer(data=request.data)
+        user = request.user
+        if serializer.is_valid():
+            try:
+                video_id = serializer.data.get('video_id')
+                video = Video.objects.get(id=video_id)
+                content = serializer.data.get('content')
+            except:
+                raise NotFound({'error': 'Video not found.'})
+            Comment.objects.create(user=user, video=video, content=content)
+            return Response(data={'message': 'comment add successfully'})
+        return Response(data={'error': 'please send complete data.'})

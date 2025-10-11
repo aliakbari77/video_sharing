@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from subscription.models import Payment, SubscriptionPlan, Video, WatchHistory
+from subscription.models import Payment, SubscriptionPlan, Video, WatchHistory, Comment
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -79,3 +79,11 @@ class PaymentHistorySerializer(serializers.ModelSerializer):
 class RenewalSubscribeSerializer(serializers.Serializer):
     subscription_id = serializers.IntegerField()
     payment_method = serializers.CharField()
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    video_id = serializers.IntegerField()
+
+    class Meta:
+        model = Comment
+        fields = ['video_id', 'content']
