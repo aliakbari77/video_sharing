@@ -1,0 +1,45 @@
+<h2>{{ video.title }}</h2>
+<video width="640" height="360" controls>
+  <source src="{{ video.file.url }}" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+
+
+<div id="comments">
+    {% if video.comments.exists %}
+        {% for comment in video.comments.all %}
+            <p>{{ comment.content }}</p>
+        {% endfor %}
+    {% else %}
+        <p>No comments yet.</p>
+    {% endif %}
+</div>
+
+<input type="text" id="commentInput" placeholder="Type your comment..." />
+<button id="sendBtn">Send</button>
+
+<script>
+    const videoId = "{{ video.id }}";
+    const username = "{{ request.user.username }}";
+
+    const socket = new WebSocket(`ws://${window.location.host}/ws/video/${videoId}/`);
+
+    socket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const commentsDiv = document.getElementById("comments");
+        const commentElement = document.createElement("p");
+        commentElement.innerHTML = `<b>${data.username}</b>: ${data.message}`;
+        commentsDiv.appendChild(commentElement);
+    };
+
+    document.getElementById("sendBtn").onclick = function() {
+        const messageInput = document.getElementById("commentInput");
+        const message = messageInput.value;
+        socket.send(JSON.stringify({
+            'message': message,
+            'username': username
+        }));
+        messageInput.value = '';
+    };
+</script>

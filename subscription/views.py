@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.views.generic import DetailView
 
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
@@ -113,22 +114,11 @@ class VideoView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-class VideoDetailView(APIView):
+class VideoDetailView(DetailView):
     permission_classes = [IsAuthenticated, CanWatchVideo]
-
-    def get(self, request, *args, **kwargs):
-        video_id = self.kwargs.get('pk')
-        try:
-            video = Video.objects.get(id=video_id)
-        except:
-            raise NotFound({'error': 'Video not found.'})
-        
-        user = request.user
-        if not WatchHistory.objects.filter(user=user, video=video).exists():
-            WatchHistory.objects.create(user=user, video=video)
-        
-        serializer = VideoDetailSerializer(video)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    model = Video
+    template_name = 'video_detail.html'
+    context_object_name = 'video'
 
 
 class UnsubscribeView(APIView):
