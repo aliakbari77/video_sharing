@@ -1,45 +1,190 @@
-<h2>{{ video.title }}</h2>
-<video width="640" height="360" controls>
-  <source src="{{ video.file.url }}" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ video.title }}</title>
+    <style>
+        body {
+            font-family: "Inter", "Segoe UI", sans-serif;
+            background-color: #f7f8fa;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
 
+        .container {
+            max-width: 850px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
 
+        h2 {
+            font-size: 26px;
+            color: #111;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
 
-<div id="comments">
-    {% if video.comments.exists %}
-        {% for comment in video.comments.all %}
-            <p>{{ comment.content }}</p>
-        {% endfor %}
-    {% else %}
-        <p>No comments yet.</p>
-    {% endif %}
+        video {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* 🎯 Comments section */
+        #comments {
+            background: #fafbfc;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            height: 280px; /* fixed height */
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        #comments::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #comments::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+            border-radius: 6px;
+        }
+
+        .comment {
+            background: #eef1f6;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+            transition: background 0.3s ease;
+        }
+
+        .comment:hover {
+            background: #e4e8ee;
+        }
+
+        .comment strong {
+            color: #333;
+        }
+
+        .comment small {
+            display: block;
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .comment-input {
+            display: flex;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        #commentInput {
+            flex-grow: 1;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        #commentInput:focus {
+            border-color: #007bff;
+        }
+
+        #sendBtn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        #sendBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .no-comments {
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>{{ video.title }}</h2>
+
+    <video controls>
+        <source src="{{ video.file.url }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <h3>Comments</h3>
+    <div id="comments">
+        {% if video.comments.exists %}
+            {% for comment in video.comments.all %}
+                <div class="comment">
+                    <strong>{{ comment.user.username }}</strong>
+                    <p>{{ comment.content }}</p>
+                    <small>{{ comment.created_at|date:"Y/m/d H:i" }}</small>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="no-comments">No comments yet.</p>
+        {% endif %}
+    </div>
+
+    <div class="comment-input">
+        <input type="text" id="commentInput" placeholder="Type your comment..." />
+        <button id="sendBtn">Send</button>
+    </div>
 </div>
-
-<input type="text" id="commentInput" placeholder="Type your comment..." />
-<button id="sendBtn">Send</button>
 
 <script>
     const videoId = "{{ video.id }}";
     const username = "{{ request.user.username }}";
+    const commentsDiv = document.getElementById("comments");
 
     const socket = new WebSocket(`ws://${window.location.host}/ws/video/${videoId}/`);
 
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        const commentsDiv = document.getElementById("comments");
-        const commentElement = document.createElement("p");
-        commentElement.innerHTML = `<b>${data.username}</b>: ${data.message}`;
+
+        const commentElement = document.createElement("div");
+        commentElement.className = "comment";
+        commentElement.innerHTML = `
+            <strong>${data.username}</strong>
+            <p>${data.message}</p>
+            <small>just now</small>
+        `;
+
         commentsDiv.appendChild(commentElement);
+        commentsDiv.scrollTop = commentsDiv.scrollHeight; // 🎯 auto scroll to bottom
     };
 
     document.getElementById("sendBtn").onclick = function() {
         const messageInput = document.getElementById("commentInput");
-        const message = messageInput.value;
+        const message = messageInput.value.trim();
+        if (!message) return;
+
         socket.send(JSON.stringify({
             'message': message,
             'username': username
         }));
+
         messageInput.value = '';
     };
 </script>
+</body>
+</html>
