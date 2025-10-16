@@ -1,6 +1,7 @@
-from django.urls import re_path
-from subscription.consumers import CommentConsumer
+from django.urls import re_path, path
+from subscription.consumers import CommentConsumer, ViewerConsumer
 
 websocket_urlpatterns = [
-    re_path(r'ws/video/(?P<video_id>\d+)/$', CommentConsumer.as_asgi()),
+    path('ws/video/<int:video_id>/', CommentConsumer.as_asgi()),
+    path('ws/video/viewer/<int:video_id>/', ViewerConsumer.as_asgi()),
 ]

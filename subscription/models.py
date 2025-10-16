@@ -127,7 +127,7 @@ class WalletTransaction(models.Model):
 
 class WatchHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name='watches')
     watched_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

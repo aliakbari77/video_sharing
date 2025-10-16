@@ -129,6 +129,11 @@
         <source src="{{ video.file.url }}" type="video/mp4">
         Your browser does not support the video tag.
     </video>
+    <h3>👁 Viewers</h3>
+    <div id="viewers">
+        <p class="no-viewers">No viewers yet.</p>
+    </div>
+
 
     <h3>Comments</h3>
     <div id="comments">
@@ -151,40 +156,79 @@
     </div>
 </div>
 
+
 <script>
+    function update_comments(videoId, username){
+        const commentsDiv = document.getElementById("comments");
+
+        const socket = new WebSocket(`ws://${window.location.host}/ws/video/${videoId}/`);
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            const commentElement = document.createElement("div");
+            commentElement.className = "comment";
+            commentElement.innerHTML = `
+                <strong>${data.username}</strong>
+                <p>${data.message}</p>
+                <small>just now</small>
+            `;
+
+            commentsDiv.appendChild(commentElement);
+            commentsDiv.scrollTop = commentsDiv.scrollHeight; 
+        };
+
+        document.getElementById("sendBtn").onclick = function() {
+            const messageInput = document.getElementById("commentInput");
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            socket.send(JSON.stringify({
+                'message': message,
+                'username': username
+            }));
+
+            messageInput.value = '';
+        };
+    }
+    
+    function update_viewers(videoId, username){
+        const socket = new WebSocket(`ws://${window.location.host}/ws/video/viewer/${videoId}/`);
+        const viewersDiv = document.getElementById("viewers");
+        const viewerList = new Set();
+
+        socket.onopen = function() {
+            socket.send(JSON.stringify({
+                'username': username
+            }));
+        };
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const newViewer = data.username;
+
+            if (!viewerList.has(newViewer)) {
+                viewerList.add(newViewer);
+
+                // حذف متن "No viewers yet."
+                const noViewersMsg = viewersDiv.querySelector('.no-viewers');
+                if (noViewersMsg) noViewersMsg.remove();
+
+                const viewerEl = document.createElement("div");
+                viewerEl.className = "viewer";
+                viewerEl.textContent = newViewer;
+                viewersDiv.appendChild(viewerEl);
+            }
+        };
+    }
+
+
     const videoId = "{{ video.id }}";
     const username = "{{ request.user.username }}";
-    const commentsDiv = document.getElementById("comments");
 
-    const socket = new WebSocket(`ws://${window.location.host}/ws/video/${videoId}/`);
-
-    socket.onmessage = function(e) {
-        const data = JSON.parse(e.data);
-
-        const commentElement = document.createElement("div");
-        commentElement.className = "comment";
-        commentElement.innerHTML = `
-            <strong>${data.username}</strong>
-            <p>${data.message}</p>
-            <small>just now</small>
-        `;
-
-        commentsDiv.appendChild(commentElement);
-        commentsDiv.scrollTop = commentsDiv.scrollHeight; // 🎯 auto scroll to bottom
-    };
-
-    document.getElementById("sendBtn").onclick = function() {
-        const messageInput = document.getElementById("commentInput");
-        const message = messageInput.value.trim();
-        if (!message) return;
-
-        socket.send(JSON.stringify({
-            'message': message,
-            'username': username
-        }));
-
-        messageInput.value = '';
-    };
+    update_comments(videoId, username)
+    update_viewers(videoId, username)
+    
 </script>
 </body>
 </html>
