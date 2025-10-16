@@ -1,7 +1,10 @@
+from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 from django.contrib.auth.models import User
 from django.views.generic import DetailView
 
-from rest_framework.views import APIView
+from rest_framework.views import APIView, View
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.exceptions import NotFound
@@ -114,11 +117,13 @@ class VideoView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-class VideoDetailView(DetailView):
-    permission_classes = [IsAuthenticated, CanWatchVideo]
-    model = Video
-    template_name = 'video_detail.html'
-    context_object_name = 'video'
+class VideoDetailView(LoginRequiredMixin, View):
+    def get(self, request, video_id, *args, **kwargs):
+        video = Video.objects.get(id=video_id)
+        WatchHistory.objects.get_or_create(video=video, user=request.user)
+        return render(request, 'video_detail.html', {
+            'video': video
+        })
 
 
 class UnsubscribeView(APIView):

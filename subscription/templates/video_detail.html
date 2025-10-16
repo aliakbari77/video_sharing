@@ -131,7 +131,13 @@
     </video>
     <h3>👁 Viewers</h3>
     <div id="viewers">
-        <p class="no-viewers">No viewers yet.</p>
+        {% if video.watches.exists %}
+            {% for viewer in video.watches.all %}
+                <p>{{ viewer.user.username }}</p>    
+            {% endfor %}
+        {% else %}
+            <p class="no-viewers">No viewers yet.</p>
+        {% endif %}
     </div>
 
 
@@ -227,8 +233,7 @@
     const username = "{{ request.user.username }}";
 
     update_comments(videoId, username)
-    update_viewers(videoId, username)
-    
+    update_viewers(videoId, username)    
 </script>
 </body>
 </html>
