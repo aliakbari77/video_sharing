@@ -63,15 +63,16 @@ class ViewerConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         username = data['username']
 
-        await self.save_viewer(username, self.video_id)
+        created_new_viewer = await self.save_viewer(username, self.video_id)
 
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'update_viewer',
-                'username': username,
-            }
-        )
+        if created_new_viewer:
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'update_viewer',
+                    'username': username,
+                }
+            )
 
     async def update_viewer(self, event):
         username = event['username']
@@ -83,5 +84,6 @@ class ViewerConsumer(AsyncWebsocketConsumer):
     def save_viewer(self, username, video_id):
         user = User.objects.get(username=username)
         video = Video.objects.get(id=video_id)
-        WatchHistory.objects.get_or_create(user=user, video=video)
+        watch_history, created = WatchHistory.objects.get_or_create(user=user, video=video)
+        return created
 

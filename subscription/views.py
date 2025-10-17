@@ -11,6 +11,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework.renderers import TemplateHTMLRenderer
 
 from subscription.permissions import CanWatchVideo
 from subscription.serializers import (
@@ -117,7 +118,11 @@ class VideoView(ListAPIView):
     permission_classes = [AllowAny]
 
 
-class VideoDetailView(LoginRequiredMixin, View):
+class VideoDetailView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'video_detail.html'
+    permission_classes = [IsAuthenticated]
+
     def get(self, request, video_id, *args, **kwargs):
         video = Video.objects.get(id=video_id)
         WatchHistory.objects.get_or_create(video=video, user=request.user)
